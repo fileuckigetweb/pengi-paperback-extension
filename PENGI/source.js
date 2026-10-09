@@ -796,7 +796,7 @@ var _Sources = (() => {
   var SAMPLE_UID = "0d95deb854b675fd054f4ee5f8742557";
   var SAMPLE_CHAPTER = "59b0eda63653606d0f743674287d0837";
   var PENGIInfo = {
-    version: "0.1.0",
+    version: "0.1.1",
     name: "PENGI (experimental)",
     icon: "icon.png",
     author: "Community development",
@@ -845,8 +845,24 @@ var _Sources = (() => {
     async getChapterDetails(_mangaId, _chapterId) {
       throw new Error("PENGI reader pages are encrypted; no accessible page URLs were found in supplied HTML");
     }
-    async getSearchResults(_query, _metadata) {
-      throw new Error("PENGI search endpoint has not been verified");
+    async getSearchResults(query, _metadata) {
+      const manga = await this.fetchSample();
+      const keyword = String(query.title ?? "").trim().toLowerCase();
+      const titles = [
+        manga.title,
+        manga.englishTitle ?? "",
+        manga.originalTitle ?? ""
+      ];
+      const matched = !keyword || titles.some((title) => title.toLowerCase().includes(keyword));
+      return {
+        results: matched ? [{
+          id: manga.id,
+          title: manga.title,
+          image: manga.cover,
+          subtitle: manga.englishTitle || ""
+        }] : [],
+        metadata: void 0
+      };
     }
     getMangaShareUrl(_mangaId) {
       return `${BASE}/info/ReturnTraslator/shiniki-no-mahoutsukai-kami-ni-aisareta-rakudaisei-wa-mahou-gakuin-e-kayou`;
